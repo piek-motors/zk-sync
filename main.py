@@ -36,6 +36,9 @@ if __name__ == '__main__':
     # Convert to events: (card, unix_timestamp)
     events = [(txn['card'], int(txn['time'].timestamp())) for txn in transactions if txn.get('card')]
     
+    # Sort events by timestamp
+    events.sort(key=lambda x: x[1])
+    
     # Show last 5 events
     print(f"Total events: {len(events)}")
     print("Last 5 events:")
