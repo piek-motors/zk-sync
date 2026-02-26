@@ -29,7 +29,16 @@ class ERPUploader:
             json=auth_data,
             headers={'Content-Type': 'application/json'},
         )
-        response.raise_for_status()
+        
+        try:
+            response.raise_for_status()
+        except requests.HTTPError:
+            try:
+                error_data = response.json()
+                error_msg = error_data.get('message', str(error_data))
+            except (json.JSONDecodeError, ValueError):
+                error_msg = response.text or response.reason
+            raise RuntimeError(f"Login failed: {error_msg}")
         
         auth_response = response.json()
         self.access_token = auth_response['accessToken']
@@ -68,8 +77,17 @@ class ERPUploader:
             json=upload_data,
             headers={'Content-Type': 'application/json'},
         )
-        response.raise_for_status()
-        
+
+        try:
+            response.raise_for_status()
+        except requests.HTTPError:
+            try:
+                error_data = response.json()
+                error_msg = error_data.get('message', str(error_data))
+            except (json.JSONDecodeError, ValueError):
+                error_msg = response.text or response.reason
+            raise RuntimeError(f"Upload failed: {error_msg}")
+
         print(f"Upload response:\n{json.dumps(response.json(), indent=2)}")
 
 
