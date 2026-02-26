@@ -1,7 +1,9 @@
 from pyzkaccess import ZKAccess
 
+import config
 
-print('hello')
+# devices = ZKAccess.search_devices(dllpath='./plcommpro.dll')
+# print(f"found {len(devices)} devices", devices)
+print(f"config {config}")
 
-found = ZKAccess.search_devices(dllpath='./plcommpro.dll')
-print(f"found {len(found)} devices")
+ZKAccess
