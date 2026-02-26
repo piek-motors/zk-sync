@@ -64,7 +64,7 @@ class ERPUploader:
         }
         
         response = self.session.post(
-            f'{self.base_url}/trpc/hr.attendance_upload_data',
+            f'{self.base_url}/trpc/hr.attendance.upload_data',
             json=upload_data,
             headers={'Content-Type': 'application/json'},
         )
