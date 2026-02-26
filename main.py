@@ -3,8 +3,12 @@ from pyzkaccess import ZKAccess
 import config
 
 
-def fetch_all_transactions():
-    """Fetch all transactions from all configured devices."""
+def fetch_all_transactions(unread_only: bool = False):
+    """Fetch all transactions from all configured devices.
+    
+    Args:
+        unread_only: If True, fetch only unread transactions.
+    """
     all_transactions = []
     
     for ip_code in config.config['ip_codes']:
@@ -14,8 +18,10 @@ def fetch_all_transactions():
         connstr = f'protocol=TCP,ipaddress={ip},port=4370,timeout=4000,passwd={config.config["password"]}'
         
         with ZKAccess(connstr=connstr) as zk:
-            transactions = zk.table('Transaction')
-            for txn in transactions:
+            query = zk.table('Transaction')
+            if unread_only:
+                query = query.unread()
+            for txn in query:
                 txn_dict = txn.dict
                 txn_dict['device_code'] = code
                 txn_dict['device_ip'] = ip
@@ -26,6 +32,12 @@ def fetch_all_transactions():
 
 if __name__ == '__main__':
     transactions = fetch_all_transactions()
-    print(f"Fetched {len(transactions)} transactions")
-    for txn in transactions[:5]:  # Print first 5 as sample
-        print(txn)
+    
+    # Convert to events: (card, unix_timestamp)
+    events = [(txn['card'], int(txn['time'].timestamp())) for txn in transactions if txn.get('card')]
+    
+    # Show last 5 events
+    print(f"Total events: {len(events)}")
+    print("Last 5 events:")
+    for card, timestamp in events[-5:]:
+        print(f"  Card: {card}, Timestamp: {timestamp}")
