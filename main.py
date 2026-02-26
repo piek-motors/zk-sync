@@ -1,6 +1,7 @@
 from pyzkaccess import ZKAccess
 
 import config
+from erp_uploader import ERPUploader, filter_events_by_days
 
 
 def fetch_all_transactions(unread_only: bool = False):
@@ -30,17 +31,36 @@ def fetch_all_transactions(unread_only: bool = False):
     return all_transactions
 
 
-if __name__ == '__main__':
+def upload_to_erp():
+    """Fetch events from devices and upload to ERP."""
+    # Fetch all transactions
     transactions = fetch_all_transactions()
     
     # Convert to events: (card, unix_timestamp)
     events = [(txn['card'], int(txn['time'].timestamp())) for txn in transactions if txn.get('card')]
     
-    # Sort events by timestamp
+    # Sort by timestamp
     events.sort(key=lambda x: x[1])
     
-    # Show last 5 events
-    print(f"Total events: {len(events)}")
-    print("Last 5 events:")
-    for card, timestamp in events[-5:]:
-        print(f"  Card: {card}, Timestamp: {timestamp}")
+    # Filter to last 5 days
+    events = filter_events_by_days(events, days=5)
+    
+    print(f"Total events (last 5 days): {len(events)}")
+    
+    # Upload to ERP
+    uploader = ERPUploader(
+        base_url=config.config['erp_base_url'],
+        email=config.config['erp_login'],
+        password=config.config['erp_password'],
+    )
+    uploader.login()
+    
+    # For now, upload events without employees
+    # You'll need to provide employees list separately
+    uploader.upload_events(employees=[], events=events)
+    
+    print(f"Uploaded {len(events)} events")
+
+
+if __name__ == '__main__':
+    upload_to_erp()

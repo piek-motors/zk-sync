@@ -29,4 +29,7 @@ def _parse_ip_codes(ip_codes_str: str | None) -> List[Dict[str, int | str]]:
 config: dict = {
     'ip_codes': _parse_ip_codes(os.getenv('IP_CODES')),
     'password': os.getenv('PASSWORD', ''),
+    'erp_login': os.getenv('ERP_LOGIN', ''),
+    'erp_password': os.getenv('ERP_PASSWORD', ''),
+    'erp_base_url': os.getenv('ERP_BASE_URL', ''),
 }
