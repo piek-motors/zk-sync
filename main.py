@@ -48,7 +48,7 @@ def upload_to_erp(unread_only: bool = False):
     events = [
         Event(
             card=txn['card'],
-            timestamp=int(txn['time'].replace(tzinfo=timezone.utc).timestamp()),
+            timestamp=int(txn['time'].timestamp()),
             origin_id=txn['origin_id'],
         )
         for txn in transactions
