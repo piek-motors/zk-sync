@@ -48,30 +48,32 @@ class ERPUploader:
         self,
         employees: List[Dict[str, str]],
         events: List[Tuple[str, int]],
-    ) -> None:
+    ) -> dict:
         """Upload employees and events to ERP.
-        
+
         Args:
             employees: List of dicts with keys: first_name, last_name, card
             events: List of tuples (card, unix_timestamp)
+
+        Returns:
+            Server response as dict
         """
         # Convert employees to DTO format: [firstname, lastname, card]
         employee_dtos = [
             [e['first_name'], e['last_name'], e['card']]
             for e in employees
         ]
-        
-        # Convert events to DTO format: [card, timestamp] (no id)
+
         event_dtos = [
             [card, ts]
             for card, ts in events
         ]
-        
+
         upload_data = {
             'employees': employee_dtos,
             'events': event_dtos,
         }
-        
+
         response = self.session.post(
             f'{self.base_url}/trpc/hr.attendance.upload_data',
             json=upload_data,
@@ -88,7 +90,9 @@ class ERPUploader:
                 error_msg = response.text or response.reason
             raise RuntimeError(f"Upload failed: {error_msg}")
 
-        print(f"Upload response:\n{json.dumps(response.json(), indent=2)}")
+        result = response.json()
+        print(f"Upload response:\n{json.dumps(result, indent=2)}")
+        return result
 
 
 def filter_events_by_days(
