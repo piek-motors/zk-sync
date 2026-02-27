@@ -33,8 +33,6 @@ def fetch_all_transactions(unread_only: bool = False):
     return all_transactions
 
 
-UTC_PLUS_3 = timezone(timedelta(hours=-3))
-
 def upload_to_erp():
     """Fetch events from devices and upload to ERP."""
     # Fetch all transactions
@@ -42,7 +40,7 @@ def upload_to_erp():
     
     # Convert to events: (card, unix_timestamp)
     events = [
-        (txn['card'], int(txn['time'].replace(tzinfo=UTC_PLUS_3).astimezone(timezone.utc).timestamp()))
+        (txn['card'], int(txn['time'].replace(tzinfo=timezone.utc).timestamp()))
         for txn in transactions
         if txn.get('card')
     ]
