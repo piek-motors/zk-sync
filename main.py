@@ -33,7 +33,7 @@ def fetch_all_transactions(unread_only: bool = False):
     return all_transactions
 
 
-UTC_PLUS_3 = timezone(timedelta(hours=3))
+UTC_PLUS_3 = timezone(timedelta(hours=-3))
 
 def upload_to_erp():
     """Fetch events from devices and upload to ERP."""
