@@ -64,6 +64,8 @@ class ERPUploader:
             for e in employees
         ]
 
+        # Convert events to DTO format: [card, timestamp]
+        # Based on backend schema: events: z.array(z.tuple([z.string(), z.number()]))
         event_dtos = [
             [card, ts]
             for card, ts in events
@@ -73,6 +75,10 @@ class ERPUploader:
             'employees': employee_dtos,
             'events': event_dtos,
         }
+
+        print(f"Uploading {len(employee_dtos)} employees and {len(event_dtos)} events...")
+        if len(employee_dtos) == 0:
+            print("WARNING: No employees provided - server may reject empty employees array")
 
         response = self.session.post(
             f'{self.base_url}/trpc/hr.attendance.upload_data',
