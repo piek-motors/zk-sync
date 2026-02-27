@@ -10,34 +10,34 @@ class TestParseIpCodes:
 
     def test_single_ip_code_pair(self):
         result = _parse_ip_codes('192.168.1.1:001')
-        assert result == [{'ip': '192.168.1.1', 'code': 1}]
+        assert result == [{'ip': '192.168.1.1', 'origin_id': 1}]
 
     def test_multiple_ip_code_pairs(self):
         result = _parse_ip_codes('192.168.1.1:001,192.168.1.2:002')
         assert result == [
-            {'ip': '192.168.1.1', 'code': 1},
-            {'ip': '192.168.1.2', 'code': 2},
+            {'ip': '192.168.1.1', 'origin_id': 1},
+            {'ip': '192.168.1.2', 'origin_id': 2},
         ]
 
     def test_whitespace_handling(self):
         result = _parse_ip_codes(' 192.168.1.1:001 , 192.168.1.2:002 ')
         assert result == [
-            {'ip': '192.168.1.1', 'code': 1},
-            {'ip': '192.168.1.2', 'code': 2},
+            {'ip': '192.168.1.1', 'origin_id': 1},
+            {'ip': '192.168.1.2', 'origin_id': 2},
         ]
 
     def test_invalid_format_ignored(self):
         result = _parse_ip_codes('192.168.1.1:001,invalid,192.168.1.2:002')
         assert result == [
-            {'ip': '192.168.1.1', 'code': 1},
-            {'ip': '192.168.1.2', 'code': 2},
+            {'ip': '192.168.1.1', 'origin_id': 1},
+            {'ip': '192.168.1.2', 'origin_id': 2},
         ]
 
     def test_invalid_code_ignored(self):
         result = _parse_ip_codes('192.168.1.1:001,192.168.1.2:abc,192.168.1.3:003')
         assert result == [
-            {'ip': '192.168.1.1', 'code': 1},
-            {'ip': '192.168.1.3', 'code': 3},
+            {'ip': '192.168.1.1', 'origin_id': 1},
+            {'ip': '192.168.1.3', 'origin_id': 3},
         ]
 
 

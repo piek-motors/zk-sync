@@ -5,6 +5,8 @@ from typing import List, Tuple, Dict, Any
 
 import requests
 
+from models import Event
+
 
 class ERPUploader:
     """Upload attendance events to ERP system."""
@@ -47,13 +49,13 @@ class ERPUploader:
     def upload_events(
         self,
         employees: List[Dict[str, str]],
-        events: List[Tuple[str, int]],
+        events: List[Event],
     ) -> dict:
         """Upload employees and events to ERP.
 
         Args:
             employees: List of dicts with keys: first_name, last_name, card
-            events: List of tuples (card, unix_timestamp)
+            events: List of Event objects
 
         Returns:
             Server response as dict
@@ -64,12 +66,8 @@ class ERPUploader:
             for e in employees
         ]
 
-        # Convert events to DTO format: [card, timestamp]
-        # Based on backend schema: events: z.array(z.tuple([z.string(), z.number()]))
-        event_dtos = [
-            [card, ts]
-            for card, ts in events
-        ]
+        # Convert events to DTO format using to_dto() method
+        event_dtos = [event.to_dto() for event in events]
 
         upload_data = {
             'employees': employee_dtos,
@@ -102,17 +100,17 @@ class ERPUploader:
 
 
 def filter_events_by_days(
-    events: List[Tuple[str, int]],
+    events: List[Event],
     days: int = 5,
-) -> List[Tuple[str, int]]:
+) -> List[Event]:
     """Filter events to include only those from the last N days.
-    
+
     Args:
-        events: List of tuples (card, unix_timestamp)
+        events: List of Event objects
         days: Number of days to look back
-    
+
     Returns:
         Filtered list of events
     """
     cutoff = int((datetime.now() - timedelta(days=days)).timestamp())
-    return [(card, ts) for card, ts in events if ts >= cutoff]
+    return [event for event in events if event.timestamp >= cutoff]

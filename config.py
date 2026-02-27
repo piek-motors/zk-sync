@@ -6,23 +6,23 @@ load_dotenv()
 
 
 def _parse_ip_codes(ip_codes_str: str | None) -> List[Dict[str, int | str]]:
-    """Parse comma-separated IP:code pairs into a list of dicts.
-    
+    """Parse comma-separated IP:origin_id pairs into a list of dicts.
+
     Format: "192.168.1.1:001,192.168.1.2:002"
-    Returns: [{"ip": "192.168.1.1", "code": 1}, ...]
+    Returns: [{"ip": "192.168.1.1", "origin_id": 1}, ...]
     """
     if not ip_codes_str:
         return []
-    
+
     result = []
     for pair in ip_codes_str.split(','):
         pair = pair.strip()
         if ':' in pair:
-            ip, code = pair.split(':', 1)
+            ip, origin_id = pair.split(':', 1)
             try:
-                result.append({'ip': ip.strip(), 'code': int(code.strip())})
+                result.append({'ip': ip.strip(), 'origin_id': int(origin_id.strip())})
             except ValueError:
-                pass  # Skip invalid code values
+                pass  # Skip invalid origin_id values
     return result
 
 
