@@ -43,7 +43,7 @@ def upload_to_erp():
     events.sort(key=lambda x: x[1])
     
     # Filter to last 5 days
-    events = filter_events_by_days(events, days=5)
+    events = filter_events_by_days(events, days=30)
     
     print(f"Total events (last 5 days): {len(events)}")
     
