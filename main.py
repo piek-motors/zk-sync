@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from pyzkaccess import ZKAccess
 
 import config
@@ -37,7 +39,11 @@ def upload_to_erp():
     transactions = fetch_all_transactions()
     
     # Convert to events: (card, unix_timestamp)
-    events = [(txn['card'], int(txn['time'].timestamp())) for txn in transactions if txn.get('card')]
+    events = [
+        (txn['card'], int(txn['time'].replace(tzinfo=timezone.utc).timestamp()))
+        for txn in transactions
+        if txn.get('card')
+    ]
     
     # Sort by timestamp
     events.sort(key=lambda x: x[1])
