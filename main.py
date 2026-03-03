@@ -24,7 +24,7 @@ def fetch_employees_from_device(zk: ZKAccess, origin_id: int) -> List[str]:
     Returns:
         List of card numbers
     """
-    cards = []
+    cards = {}
 
     # Only fetch users from Timeformers (origin_id = 0)
     if origin_id != 0:
@@ -33,8 +33,8 @@ def fetch_employees_from_device(zk: ZKAccess, origin_id: int) -> List[str]:
     for user in zk.table('User'):
         user_dict = user.dict
         if user_dict.get('card'):
-            cards.append(str(user_dict['card']))
-    return cards
+            cards[str(user_dict['card'])] = True
+    return list(cards.keys())
 
 
 def fetch_all_employees() -> List[str]:
@@ -43,7 +43,7 @@ def fetch_all_employees() -> List[str]:
     Returns:
         List of card numbers from all devices
     """
-    all_cards = []
+    all_cards = {}
 
     for ip_config in config.config['ip_codes']:
         ip = ip_config['ip']
@@ -54,12 +54,13 @@ def fetch_all_employees() -> List[str]:
         try:
             with ZKAccess(connstr=connstr) as zk:
                 cards = fetch_employees_from_device(zk, origin_id)
-                all_cards.extend(cards)
+                for card in cards:
+                    all_cards[card] = True
                 logger.info(f"Fetched {len(cards)} cards from device {ip}")
         except Exception as e:
             logger.error(f"Failed to fetch employees from device {ip}: {e}")
 
-    return all_cards
+    return list(all_cards.keys())
 
 
 def fetch_all_transactions(unread_only: bool = False) -> List[dict]:
@@ -127,7 +128,7 @@ def upload_to_erp(unread_only: bool = False, days: int = 30):
         email=config.config['erp_login'],
         password=config.config['erp_password'],
     )
-    
+
     uploader.login()
     uploader.upload_events(employee_cards, events)
 
