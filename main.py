@@ -132,8 +132,6 @@ def upload_to_erp(unread_only: bool = False, days: int = 30):
     uploader.login()
     uploader.upload_events(employee_cards, events)
 
-    logger.info(f"Uploaded {len(employee_cards)} cards and {len(events)} events")
-
 
 def main():
     validate_config()
