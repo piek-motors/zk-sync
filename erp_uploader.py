@@ -1,11 +1,11 @@
 import json
-import time
-from datetime import datetime, timedelta
-from typing import List, Tuple, Dict, Any
-
+import logging
 import requests
-
+from datetime import datetime, timedelta
+from typing import List
 from models import Event
+
+logger = logging.getLogger(__name__)
 
 
 class ERPUploader:
@@ -25,13 +25,14 @@ class ERPUploader:
             'email': self.email,
             'password': self.password,
         }
-        
+
+        logger.info("Authenticating with ERP...")
         response = self.session.post(
             f'{self.base_url}/api/login',
             json=auth_data,
             headers={'Content-Type': 'application/json'},
         )
-        
+
         try:
             response.raise_for_status()
         except requests.HTTPError:
@@ -41,42 +42,29 @@ class ERPUploader:
             except (json.JSONDecodeError, ValueError):
                 error_msg = response.text or response.reason
             raise RuntimeError(f"Login failed: {error_msg}")
-        
+
         auth_response = response.json()
         self.access_token = auth_response['accessToken']
         self.session.headers['Authorization'] = f'Bearer {self.access_token}'
+        logger.info("Authentication successful")
     
     def upload_events(
         self,
-        employees: List[Dict[str, str]],
+        employee_cards: List[str],
         events: List[Event],
-    ) -> dict:
+    ):
         """Upload employees and events to ERP.
-
         Args:
-            employees: List of dicts with keys: first_name, last_name, card
+            employees: List of card numbers
             events: List of Event objects
-
-        Returns:
-            Server response as dict
         """
-        # Convert employees to DTO format: [firstname, lastname, card]
-        employee_dtos = [
-            [e['first_name'], e['last_name'], e['card']]
-            for e in employees
-        ]
-
-        # Convert events to DTO format using to_dto() method
-        event_dtos = [event.to_dto() for event in events]
 
         upload_data = {
-            'employees': employee_dtos,
-            'events': event_dtos,
+            'employees': employee_cards,
+            'events': [event.to_dto() for event in events],
         }
 
-        print(f"Uploading {len(employee_dtos)} employees and {len(event_dtos)} events...")
-        if len(employee_dtos) == 0:
-            print("WARNING: No employees provided - server may reject empty employees array")
+        logger.info(f"Uploading {len(employee_cards)} employees and {len(events)} events...")
 
         response = self.session.post(
             f'{self.base_url}/trpc/hr.attendance.upload_data',
@@ -95,7 +83,7 @@ class ERPUploader:
             raise RuntimeError(f"Upload failed: {error_msg}")
 
         result = response.json()
-        print(f"Upload response:\n{json.dumps(result, indent=2)}")
+        logger.info(f"Upload response:\n{json.dumps(result, indent=2)}")
         return result
 
 
@@ -113,4 +101,6 @@ def filter_events_by_days(
         Filtered list of events
     """
     cutoff = int((datetime.now() - timedelta(days=days)).timestamp())
-    return [event for event in events if event.timestamp >= cutoff]
+    filtered = [event for event in events if event.timestamp >= cutoff]
+    logger.debug(f"Filtered events: {len(events)} -> {len(filtered)} (cutoff: {cutoff})")
+    return filtered

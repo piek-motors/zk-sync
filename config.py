@@ -26,6 +26,13 @@ def _parse_ip_codes(ip_codes_str: str | None) -> List[Dict[str, int | str]]:
     return result
 
 
+def validate_config() -> None:
+    required_vars = ['PASSWORD', 'ERP_LOGIN', 'ERP_PASSWORD', 'ERP_BASE_URL', 'IP_CODES']
+    missing = [var for var in required_vars if not os.getenv(var)]
+    
+    if missing:
+        raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
+
 config: dict = {
     'ip_codes': _parse_ip_codes(os.getenv('IP_CODES')),
     'password': os.getenv('PASSWORD', ''),

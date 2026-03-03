@@ -1,6 +1,6 @@
 import os
 import pytest
-from config import _parse_ip_codes, config
+from config import _parse_ip_codes, validate_config, config
 
 
 class TestParseIpCodes:
@@ -39,6 +39,39 @@ class TestParseIpCodes:
             {'ip': '192.168.1.1', 'origin_id': 1},
             {'ip': '192.168.1.3', 'origin_id': 3},
         ]
+
+
+class TestValidateConfig:
+    def test_validate_config_missing_vars(self, monkeypatch):
+        """Test that validation fails when required vars are missing."""
+        # Clear all required env vars
+        for var in ['PASSWORD', 'ERP_LOGIN', 'ERP_PASSWORD', 'ERP_BASE_URL', 'IP_CODES']:
+            monkeypatch.setenv(var, '')
+        
+        with pytest.raises(ValueError, match="Missing required environment variables"):
+            validate_config()
+
+    def test_validate_config_missing_ip_codes(self, monkeypatch):
+        """Test that validation fails when IP_CODES is missing."""
+        monkeypatch.setenv('PASSWORD', 'test')
+        monkeypatch.setenv('ERP_LOGIN', 'test')
+        monkeypatch.setenv('ERP_PASSWORD', 'test')
+        monkeypatch.setenv('ERP_BASE_URL', 'http://test.com')
+        monkeypatch.setenv('IP_CODES', '')
+        
+        with pytest.raises(ValueError, match="IP_CODES environment variable is required"):
+            validate_config()
+
+    def test_validate_config_success(self, monkeypatch):
+        """Test that validation passes when all vars are present."""
+        monkeypatch.setenv('PASSWORD', 'test')
+        monkeypatch.setenv('ERP_LOGIN', 'test')
+        monkeypatch.setenv('ERP_PASSWORD', 'test')
+        monkeypatch.setenv('ERP_BASE_URL', 'http://test.com')
+        monkeypatch.setenv('IP_CODES', '192.168.1.1:0')
+        
+        # Should not raise
+        validate_config()
 
 
 class TestConfig:
