@@ -14,22 +14,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def fetch_employees_from_device(zk: ZKAccess, origin_id: int) -> List[str]:
+def fetch_employees_from_device(zk: ZKAccess) -> List[str]:
     """Fetch all card numbers from a single device.
-
     Args:
         zk: ZKAccess connection instance
-        origin_id: Origin ID for the device (only fetch if origin_id = 0)
-
     Returns:
         List of card numbers
     """
     cards = {}
-
-    # Only fetch users from Timeformers (origin_id = 0)
-    if origin_id != 0:
-        return []
-
     for user in zk.table('User'):
         user_dict = user.dict
         if user_dict.get('card'):
@@ -48,6 +40,10 @@ def fetch_all_employees() -> List[str]:
     for ip_config in config.config['ip_codes']:
         ip = ip_config['ip']
         origin_id = ip_config['origin_id']
+        
+        # Only fetch users from Timeformers (origin_id = 0)
+        if origin_id != 0:
+            continue
 
         connstr = f'protocol=TCP,ipaddress={ip},port=4370,timeout=4000,passwd={config.config["password"]}'
 
